@@ -27,6 +27,9 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // Routes
+app.use('/', (req, res) => {
+  res.send('🚀 Server is running successfully!');
+});
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/tasks', taskRoutes);
 app.use('/api/v1/notifications', notificationRoutes);

@@ -1,29 +1,6 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 
-/* (Auth endpoints using Clerk – "mock" implementation) */
-
-// (Public) Register endpoint – "mock" (using Clerk on frontend)
-export const register = (req, res, next) => {
-  // (In a real Clerk integration, you'd remove this endpoint.)
-  res.status(200).json({ success: true, token: "dummy_token (using Clerk)" });
-};
-
-// (Public) Login endpoint – "mock" (using Clerk on frontend)
-export const login = (req, res, next) => {
-  // (In a real Clerk integration, you'd remove this endpoint.)
-  res.status(200).json({ success: true, token: "dummy_token (using Clerk)" });
-};
-
-// (Private) "getMe" endpoint – removed (using Clerk on frontend)
-// (In a real Clerk integration, you'd remove this endpoint.)
-
-// (Private) "logout" endpoint – "mock" (using Clerk on frontend)
-export const logout = (req, res, next) => {
-  // (In a real Clerk integration, you'd remove this endpoint.)
-  res.status(200).json({ success: true, data: {} });
-};
-
 // Generate JWT
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
