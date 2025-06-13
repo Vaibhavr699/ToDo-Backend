@@ -1,75 +1,59 @@
-const Task = require('../models/Task');
-const User = require('../models/User');
-const cron = require('node-cron');
-const { createNotification } = require('../models/Notification');
+import Task from '../models/Task.js';
+import User from '../models/User.js';
+import cron from 'node-cron';
+import Notification from '../models/Notification.js';
 
-// Schedule job to run every hour
-const scheduleDueDateNotifications = () => {
-  // Run every hour at minute 0
-  cron.schedule('0 * * * *', async () => {
-    try {
-      const now = new Date();
-      const oneHourFromNow = new Date(now.getTime() + 60 * 60 * 1000);
-      const twoHoursFromNow = new Date(now.getTime() + 2 * 60 * 60 * 1000);
-      const oneDayFromNow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+// Function to check for upcoming task due dates and create notifications
+export const checkUpcomingDueDates = async () => {
+  try {
+    const today = new Date();
+    // Set to start of today for comparison
+    today.setHours(0, 0, 0, 0);
 
-      // Find tasks that are due soon
-      const upcomingTasks = await Task.find({
-        dueDate: {
-          $gte: now,
-          $lte: oneDayFromNow
-        },
-        status: { $ne: 'completed' }
-      }).populate('user', 'email name');
+    // Find tasks due in the next 24 hours (or whatever interval you define)
+    // For simplicity, let's say tasks due today or tomorrow
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    tomorrow.setHours(23, 59, 59, 999);
 
-      for (const task of upcomingTasks) {
-        const dueDate = new Date(task.dueDate);
-        let notificationType = 'info';
-        let message = '';
-        let priority = 'normal';
+    const tasks = await Task.find({
+      dueDate: { $gte: today, $lte: tomorrow },
+      status: { $ne: 'completed' }, // Only consider uncompleted tasks
+    });
 
-        // Determine notification type and message based on due date
-        if (dueDate <= oneHourFromNow) {
-          notificationType = 'warning';
-          message = `Task "${task.title}" is due in less than an hour!`;
-          priority = 'high';
-        } else if (dueDate <= twoHoursFromNow) {
-          notificationType = 'warning';
-          message = `Task "${task.title}" is due in 2 hours`;
-          priority = 'high';
-        } else if (dueDate <= oneDayFromNow) {
-          notificationType = 'info';
-          message = `Task "${task.title}" is due tomorrow`;
-          priority = 'normal';
-        }
+    for (const task of tasks) {
+      const existingNotification = await Notification.findOne({
+        task: task._id,
+        type: 'upcoming_due_date',
+        read: false, // Only if the notification hasn't been read
+      });
 
-        // Create notification if it doesn't exist for this time window
-        const existingNotification = await Notification.findOne({
+      if (!existingNotification) {
+        // Create a new notification
+        const notification = new Notification({
+          user: task.user, // Assuming task has a user ID
           task: task._id,
-          type: notificationType,
-          createdAt: { $gte: new Date(now.getTime() - 60 * 60 * 1000) } // Within last hour
+          type: 'upcoming_due_date',
+          message: `Task '${task.title}' is due soon!`, // Customize message
+          read: false,
+          createdAt: new Date(),
         });
-
-        if (!existingNotification) {
-          await createNotification({
-            user: task.user._id,
-            task: task._id,
-            type: notificationType,
-            title: 'Task Due Soon',
-            message,
-            priority,
-            read: false
-          });
-        }
+        await notification.save();
+        console.log(`Notification created for task: ${task.title}`);
       }
-
-      console.log(`[${new Date().toISOString()}] Due date notifications check completed`);
-    } catch (error) {
-      console.error('Error in due date notification job:', error);
     }
-  });
+  } catch (error) {
+    console.error('Error checking upcoming due dates:', error);
+  }
 };
 
-module.exports = {
-  scheduleDueDateNotifications
+// Schedule the cron job to run, for example, every day at midnight
+// You can adjust the cron schedule as needed.
+// For testing, you might want to run it more frequently, like every minute: '* * * * *'
+// Or every hour: '0 * * * *'
+export const startDueDateCheckCron = () => {
+  cron.schedule('* * * * *', () => { // Runs every minute for testing
+    console.log('Running scheduled job: checkUpcomingDueDates');
+    checkUpcomingDueDates();
+  });
 }; 

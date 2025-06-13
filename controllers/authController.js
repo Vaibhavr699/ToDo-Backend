@@ -3,6 +3,9 @@ import User from '../models/User.js';
 
 // Generate JWT
 const generateToken = (id) => {
+  if (!process.env.JWT_SECRET) {
+    throw new Error('JWT_SECRET is not defined in environment variables');
+  }
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: '30d',
   });
@@ -13,6 +16,7 @@ const generateToken = (id) => {
 // @access  Public
 export const registerUser = async (req, res) => {
   try {
+    console.log('Register user request body:', req.body);
     const { name, email, password } = req.body;
 
     // Check if user exists
@@ -43,7 +47,7 @@ export const registerUser = async (req, res) => {
     }
   } catch (error) {
     console.error('Register error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: error.message || 'Server error' });
   }
 };
 
