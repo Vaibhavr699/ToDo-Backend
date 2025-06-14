@@ -24,8 +24,7 @@ export const checkUpcomingDueDates = async () => {
     for (const task of tasks) {
       const existingNotification = await Notification.findOne({
         task: task._id,
-        type: 'upcoming_due_date',
-        read: false, // Only if the notification hasn't been read
+        type: 'warning',
       });
 
       if (!existingNotification) {
