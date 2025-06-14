@@ -33,7 +33,8 @@ export const checkUpcomingDueDates = async () => {
         const notification = new Notification({
           user: task.user, // Assuming task has a user ID
           task: task._id,
-          type: 'upcoming_due_date',
+          type: 'warning',
+          title: 'Upcoming Task Due',
           message: `Task '${task.title}' is due soon!`, // Customize message
           read: false,
           createdAt: new Date(),
