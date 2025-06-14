@@ -3,7 +3,9 @@ import {
   registerUser,
   loginUser,
   getUserProfile,
-  updateUserProfile
+  updateUserProfile,
+  forgotPassword,
+  resetPassword
 } from '../controllers/authController.js';
 import { protect } from '../middleware/auth.js';
 
@@ -60,6 +62,8 @@ router.get('/', (req, res) => {
 // Auth endpoints
 router.post('/register', registerUser);
 router.post('/login', loginUser);
+router.post('/forgotpassword', forgotPassword);
+router.put('/resetpassword/:resettoken', resetPassword);
 router.get('/me', protect, getUserProfile);
 router.put('/profile', protect, updateUserProfile);
 
