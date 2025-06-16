@@ -180,9 +180,17 @@ export const resetPassword = async (req, res) => {
         email: updatedUser.email
       });
 
+      // Generate JWT token
+      const token = generateToken(updatedUser._id);
+
+      // Get complete user data
+      const userData = await User.findById(updatedUser._id).select('-password');
+
       res.status(200).json({
         success: true,
-        message: 'Password has been reset successfully'
+        message: 'Password has been reset successfully',
+        token,
+        user: userData
       });
     } catch (saveError) {
       console.error('Error saving user after password reset:', saveError);
