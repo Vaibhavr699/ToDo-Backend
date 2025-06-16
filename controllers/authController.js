@@ -68,6 +68,17 @@ export const loginUser = async (req, res) => {
 // @access  Public
 export const forgotPassword = async (req, res) => {
   try {
+    console.log('Forgot password request received:', {
+      email: req.body.email
+    });
+
+    if (!req.body.email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is required'
+      });
+    }
+
     const user = await User.findOne({ email: req.body.email });
 
     if (!user) {
