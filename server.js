@@ -14,7 +14,7 @@ console.log('Environment variables loaded:', {
 
 import app from './app.js';
 import http from 'http';
-import { startDueDateCheckCron } from './services/notificationService.js';
+import notificationService from './services/notificationService.js';
 
 // Global error handlers to catch unhandled exceptions and rejections
 process.on('uncaughtException', (err) => {
@@ -43,12 +43,13 @@ server.on('error', (error) => {
   }
 });
 
+// Initialize notification service
+notificationService.initializeNotificationService();
+
 // Start server
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-  // Schedule notifications
-  startDueDateCheckCron();
 });
 
 export default server;

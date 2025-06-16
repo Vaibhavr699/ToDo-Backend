@@ -13,8 +13,8 @@ const notificationSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['info', 'warning', 'success', 'error'],
-    default: 'info'
+    enum: ['due_soon', 'overdue', 'completed', 'updated'],
+    default: 'due_soon'
   },
   title: {
     type: String,
@@ -30,6 +30,14 @@ const notificationSchema = new mongoose.Schema({
     default: 'normal'
   },
   read: {
+    type: Boolean,
+    default: false
+  },
+  scheduledFor: {
+    type: Date,
+    required: true
+  },
+  sent: {
     type: Boolean,
     default: false
   }
@@ -100,6 +108,86 @@ export const markAllAsRead = async (userId) => {
   }
 };
 
+// Get due notifications
+export const getDueNotifications = async () => {
+  try {
+    const now = new Date();
+    const notifications = await Notification.find({
+      scheduledFor: { $lte: now },
+      sent: false
+    }).populate('user', 'email').populate('task', 'title dueDate status');
+    return notifications;
+  } catch (error) {
+    console.error('Error getting due notifications:', error);
+    throw error;
+  }
+};
+
+// Mark notification as sent
+export const markAsSent = async (notificationId) => {
+  try {
+    const notification = await Notification.findByIdAndUpdate(
+      notificationId,
+      { sent: true },
+      { new: true }
+    );
+    return notification;
+  } catch (error) {
+    console.error('Error marking notification as sent:', error);
+    throw error;
+  }
+};
+
+// Create task notifications
+export const createTaskNotifications = async (task) => {
+  try {
+    const notifications = [];
+    const dueDate = new Date(task.dueDate);
+    const now = new Date();
+
+    // Only create notifications for future tasks
+    if (dueDate > now) {
+      // Notification for 1 day before
+      const oneDayBefore = new Date(dueDate);
+      oneDayBefore.setDate(oneDayBefore.getDate() - 1);
+      if (oneDayBefore > now) {
+        notifications.push({
+          user: task.user,
+          task: task._id,
+          type: 'due_soon',
+          title: 'Task Due Tomorrow',
+          message: `Your task "${task.title}" is due tomorrow.`,
+          priority: 'high',
+          scheduledFor: oneDayBefore
+        });
+      }
+
+      // Notification for 1 hour before
+      const oneHourBefore = new Date(dueDate);
+      oneHourBefore.setHours(oneHourBefore.getHours() - 1);
+      if (oneHourBefore > now) {
+        notifications.push({
+          user: task.user,
+          task: task._id,
+          type: 'due_soon',
+          title: 'Task Due in 1 Hour',
+          message: `Your task "${task.title}" is due in 1 hour.`,
+          priority: 'high',
+          scheduledFor: oneHourBefore
+        });
+      }
+    }
+
+    // Create all notifications
+    const createdNotifications = await Notification.insertMany(notifications);
+    console.log('Created task notifications:', createdNotifications.length);
+    return createdNotifications;
+  } catch (error) {
+    console.error('Error creating task notifications:', error);
+    throw error;
+  }
+};
+
 // Delete old notifications (older than 30 days)
 export const deleteOldNotifications = async () => {
   try {
@@ -117,6 +205,21 @@ export const deleteOldNotifications = async () => {
     throw error;
   }
 };
+
+// After Notification.create in notifyAllDueTasks, keep only 10 most recent notifications per user
+notificationSchema.post('save', async function(doc) {
+  try {
+    const userId = doc.user;
+    const notifications = await mongoose.model('Notification').find({ user: userId }).sort({ createdAt: -1 });
+    if (notifications.length > 10) {
+      const toDelete = notifications.slice(10);
+      const idsToDelete = toDelete.map(n => n._id);
+      await mongoose.model('Notification').deleteMany({ _id: { $in: idsToDelete } });
+    }
+  } catch (err) {
+    console.error('Error deleting old notifications:', err);
+  }
+});
 
 const Notification = mongoose.model('Notification', notificationSchema);
 
