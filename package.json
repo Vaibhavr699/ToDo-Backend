@@ -16,6 +16,7 @@
     "bcryptjs": "^3.0.2",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
+    "crypto": "^1.0.1",
     "dotenv": "^16.5.0",
     "express": "^4.18.2",
     "helmet": "^8.1.0",
@@ -25,6 +26,7 @@
     "morgan": "^1.10.0",
     "node-cron": "^4.1.0",
     "nodemailer": "^7.0.3",
+    "vite-plugin-rewrite-all": "^1.0.2",
     "winston": "^3.17.0",
     "winston-mongodb": "^7.0.0"
   },

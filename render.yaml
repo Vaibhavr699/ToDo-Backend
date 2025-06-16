@@ -15,13 +15,13 @@ services:
         sync: false
       - key: JWT_EXPIRE
         value: 30d
-      - key: SMTP_HOST
+      - key: EMAIL_HOST
         sync: false
-      - key: SMTP_PORT
+      - key: EMAIL_PORT
         sync: false
-      - key: SMTP_EMAIL
+      - key: EMAIL_USERNAME
         sync: false
-      - key: SMTP_PASSWORD
+      - key: EMAIL_PASSWORD
         sync: false
       - key: FROM_EMAIL
         sync: false

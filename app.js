@@ -53,14 +53,19 @@ app.use(cookieParser());
 
 // Add a logging middleware to inspect all incoming requests
 app.use((req, res, next) => {
-  console.log(`Incoming request: ${req.method} ${req.originalUrl}`);
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
+  console.log('Request headers:', req.headers);
   console.log('Request body:', req.body);
   next();
 });
 
 // Health check endpoint
 app.get('/api/v1/health', (req, res) => {
-  res.status(200).json({ status: 'ok', message: 'Server is running' });
+  res.status(200).json({ 
+    status: 'ok', 
+    message: 'Server is running',
+    timestamp: new Date().toISOString()
+  });
 });
 
 // API Routes
@@ -68,9 +73,19 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/tasks', taskRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
 
+// Also mount routes without /api/v1 prefix for backward compatibility
+app.use('/api/auth', authRoutes);
+app.use('/api/tasks', taskRoutes);
+app.use('/api/notifications', notificationRoutes);
+
 // 404 handler for API routes
 app.use('/api/v1/*', (req, res) => {
-  res.status(404).json({ message: 'API endpoint not found' });
+  console.log('404 Not Found:', req.method, req.originalUrl);
+  res.status(404).json({ 
+    message: 'API endpoint not found',
+    path: req.originalUrl,
+    method: req.method
+  });
 });
 
 // Root route handler
@@ -78,7 +93,8 @@ app.get('/', (req, res) => {
   res.status(200).json({ 
     message: 'Welcome to Todo App API',
     version: '1.0.0',
-    documentation: '/api/v1/docs'
+    documentation: '/api/v1/docs',
+    timestamp: new Date().toISOString()
   });
 });
 
@@ -87,13 +103,20 @@ app.use((err, req, res, next) => {
   console.error('Error:', err);
   res.status(err.status || 500).json({
     message: err.message || 'Internal server error',
-    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+    timestamp: new Date().toISOString()
   });
 });
 
 // Catch-all 404 handler
 app.use((req, res) => {
-  res.status(404).json({ message: 'Route not found' });
+  console.log('404 Not Found:', req.method, req.originalUrl);
+  res.status(404).json({ 
+    message: 'Route not found',
+    path: req.originalUrl,
+    method: req.method,
+    timestamp: new Date().toISOString()
+  });
 });
 
 export default app;

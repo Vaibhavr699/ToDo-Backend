@@ -3,7 +3,10 @@ import {
   registerUser,
   loginUser,
   getUserProfile,
-  updateUserProfile
+  updateUserProfile,
+  forgotPassword,
+  resetPassword,
+  changePassword
 } from '../controllers/authController.js';
 import { protect } from '../middleware/auth.js';
 
@@ -33,6 +36,22 @@ router.get('/', (req, res) => {
           password: 'string'
         }
       },
+      forgotPassword: {
+        method: 'POST',
+        path: '/api/v1/auth/forgot-password',
+        description: 'Request password reset',
+        body: {
+          email: 'string'
+        }
+      },
+      resetPassword: {
+        method: 'POST',
+        path: '/api/v1/auth/reset-password/:resetToken',
+        description: 'Reset password using token',
+        body: {
+          password: 'string'
+        }
+      },
       profile: {
         method: 'GET',
         path: '/api/v1/auth/me',
@@ -57,10 +76,15 @@ router.get('/', (req, res) => {
   });
 });
 
-// Auth endpoints
+// Public routes
 router.post('/register', registerUser);
 router.post('/login', loginUser);
+router.post('/forgot-password', forgotPassword);
+router.post('/reset-password/:resetToken', resetPassword);
+
+// Protected routes
 router.get('/me', protect, getUserProfile);
 router.put('/profile', protect, updateUserProfile);
+router.put('/change-password', protect, changePassword);
 
 export default router;
