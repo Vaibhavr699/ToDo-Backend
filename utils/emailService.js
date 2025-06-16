@@ -13,6 +13,13 @@ const sendEmail = async options => {
       },
     });
 
+    // Ensure the reset URL is absolute
+    const resetUrl = options.resetUrl.startsWith('http') 
+      ? options.resetUrl 
+      : `https://to-do-frontend-ljd2.vercel.app${options.resetUrl}`;
+
+    console.log('Sending email with reset URL:', resetUrl);
+
     // 2) Define the email options
     const mailOptions = {
       from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
@@ -25,7 +32,7 @@ const sendEmail = async options => {
           <p>You are receiving this email because you (or someone else) has requested to reset the password for your account.</p>
           <p>Click the button below to reset your password:</p>
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${options.resetUrl}" 
+            <a href="${resetUrl}" 
                style="background-color: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
               Reset Password
             </a>
@@ -35,7 +42,7 @@ const sendEmail = async options => {
           <hr style="border: 1px solid #eee; margin: 20px 0;">
           <p style="color: #666; font-size: 12px;">
             If the button above doesn't work, copy and paste this link into your browser:<br>
-            ${options.resetUrl}
+            ${resetUrl}
           </p>
         </div>
       `

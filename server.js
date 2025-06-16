@@ -1,6 +1,16 @@
 import dotenv from 'dotenv';
 dotenv.config();
-console.log('Loaded MONGO_URI from .env:', process.env.MONGO_URI);
+
+// Log environment variables (excluding sensitive ones)
+console.log('Environment variables loaded:', {
+  NODE_ENV: process.env.NODE_ENV,
+  PORT: process.env.PORT,
+  FRONTEND_URL: process.env.FRONTEND_URL,
+  EMAIL_HOST: process.env.EMAIL_HOST,
+  EMAIL_PORT: process.env.EMAIL_PORT,
+  FROM_EMAIL: process.env.FROM_EMAIL,
+  FROM_NAME: process.env.FROM_NAME
+});
 
 import app from './app.js';
 import http from 'http';
@@ -19,8 +29,10 @@ process.on('unhandledRejection', (err) => {
   process.exit(1);
 });
 
-const server = http.createServer(app);
 const PORT = process.env.PORT || 5000;
+
+// Create HTTP server
+const server = http.createServer(app);
 
 // Handle server errors
 server.on('error', (error) => {

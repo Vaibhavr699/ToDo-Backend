@@ -26,4 +26,6 @@ services:
       - key: FROM_EMAIL
         sync: false
       - key: FROM_NAME
-        sync: false 
+        sync: false
+      - key: FRONTEND_URL
+        value: https://to-do-frontend-ljd2.vercel.app 

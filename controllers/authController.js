@@ -83,7 +83,19 @@ export const forgotPassword = async (req, res) => {
     await user.save({ validateBeforeSave: false });
 
     // Create reset url
-    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+    console.log('Environment variables:', {
+      FRONTEND_URL: process.env.FRONTEND_URL,
+      NODE_ENV: process.env.NODE_ENV,
+      origin: req.headers.origin
+    });
+
+    // Use the origin from the request if available, otherwise use FRONTEND_URL
+    const frontendUrl = req.headers.origin || process.env.FRONTEND_URL || 'https://to-do-frontend-ljd2.vercel.app';
+    console.log('Using frontend URL:', frontendUrl);
+    
+    // Pass just the path to the email service
+    const resetUrl = `/reset-password/${resetToken}`;
+    console.log('Generated reset URL path:', resetUrl);
 
     try {
       await sendEmail({
@@ -123,16 +135,35 @@ export const forgotPassword = async (req, res) => {
 // @access  Public
 export const resetPassword = async (req, res) => {
   try {
+    console.log('Reset password request received:', {
+      token: req.params.resetToken,
+      body: req.body
+    });
+
+    if (!req.body.password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password is required'
+      });
+    }
+
     // Get hashed token
     const resetPasswordToken = crypto
       .createHash('sha256')
       .update(req.params.resetToken)
       .digest('hex');
 
+    console.log('Hashed token:', resetPasswordToken);
+
     const user = await User.findOne({
       resetPasswordToken,
       resetPasswordExpire: { $gt: Date.now() }
     });
+
+    console.log('Found user:', user ? {
+      id: user._id,
+      email: user.email
+    } : 'No user found');
 
     if (!user) {
       return res.status(400).json({
@@ -141,21 +172,30 @@ export const resetPassword = async (req, res) => {
       });
     }
 
-    // Set new password
-    user.password = req.body.password;
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpire = undefined;
-    await user.save();
+    try {
+      // Use the new updatePassword method
+      const updatedUser = await User.updatePassword(user._id, req.body.password);
+      console.log('Password reset successful for user:', {
+        id: updatedUser._id,
+        email: updatedUser.email
+      });
 
-    res.status(200).json({
-      success: true,
-      message: 'Password has been reset successfully'
-    });
+      res.status(200).json({
+        success: true,
+        message: 'Password has been reset successfully'
+      });
+    } catch (saveError) {
+      console.error('Error saving user after password reset:', saveError);
+      return res.status(500).json({
+        success: false,
+        message: saveError.message || 'Error saving new password. Please try again.'
+      });
+    }
   } catch (error) {
     console.error('Reset password error:', error);
     res.status(500).json({
       success: false,
-      message: 'An error occurred. Please try again later.'
+      message: error.message || 'An error occurred. Please try again later.'
     });
   }
 };

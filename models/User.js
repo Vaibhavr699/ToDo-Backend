@@ -31,7 +31,11 @@ const userSchema = new mongoose.Schema({
     default: false
   },
   resetPasswordToken: String,
-  resetPasswordExpire: Date
+  resetPasswordExpire: Date,
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
 }, {
   timestamps: true
 });
@@ -75,6 +79,48 @@ userSchema.methods.getResetPasswordToken = function() {
   this.resetPasswordExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
 
   return resetToken;
+};
+
+// Static method to update password without validation
+userSchema.statics.updatePassword = async function(userId, newPassword) {
+  try {
+    console.log('Updating password for user:', userId);
+    
+    if (!userId || !newPassword) {
+      throw new Error('User ID and new password are required');
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    
+    console.log('Password hashed successfully');
+    
+    const updatedUser = await this.findByIdAndUpdate(
+      userId,
+      {
+        $set: {
+          password: hashedPassword,
+          resetPasswordToken: undefined,
+          resetPasswordExpire: undefined
+        }
+      },
+      { 
+        new: true, 
+        runValidators: false,
+        context: 'query'
+      }
+    );
+
+    if (!updatedUser) {
+      throw new Error('User not found');
+    }
+
+    console.log('Password updated successfully for user:', userId);
+    return updatedUser;
+  } catch (error) {
+    console.error('Error in updatePassword:', error);
+    throw error;
+  }
 };
 
 const User = mongoose.model('User', userSchema);

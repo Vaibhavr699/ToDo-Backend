@@ -16,13 +16,9 @@ const app = express();
 // CORS configuration
 const allowedOrigins = [
   'http://localhost:3000',
-  'http://localhost:3001',
-  'https://todo-app-frontend-vaibhav.vercel.app',
-  'https://todo-app-frontend-git-main-vaibhav.vercel.app',
   'https://to-do-frontend-ljd2.vercel.app'
 ];
 
-// CORS middleware configuration
 app.use(cors({
   origin: function(origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
