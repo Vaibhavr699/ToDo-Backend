@@ -226,8 +226,8 @@ export const changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
 
-    // Get user with password
-    const user = await User.findById(req.user._id).select('+password');
+    // Get user with password and name
+    const user = await User.findById(req.user._id).select('+password name');
 
     // Check if current password is correct
     const isMatch = await user.matchPassword(currentPassword);
@@ -240,7 +240,8 @@ export const changePassword = async (req, res) => {
 
     // Update password
     user.password = newPassword;
-    await user.save();
+    if (!user.name) user.name = "User";
+    await user.save({ validateBeforeSave: false });
 
     res.status(200).json({
       success: true,
