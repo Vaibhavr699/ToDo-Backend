@@ -40,9 +40,6 @@ app.use(cors({
   maxAge: 86400 // 24 hours
 }));
 
-// Handle preflight requests
-app.options('*', cors());
-
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
