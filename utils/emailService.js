@@ -16,7 +16,7 @@ const sendEmail = async options => {
     // Ensure the reset URL is absolute
     const resetUrl = options.resetUrl.startsWith('http') 
       ? options.resetUrl 
-      : `https://to-do-frontend-ljd2.vercel.app${options.resetUrl}`;
+      : `https://todo-frontend-beta-lemon.vercel.app${options.resetUrl}`;
 
     console.log('Sending email with reset URL:', resetUrl);
 

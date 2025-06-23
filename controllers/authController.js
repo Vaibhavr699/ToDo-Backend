@@ -101,7 +101,7 @@ export const forgotPassword = async (req, res) => {
     });
 
     // Use the origin from the request if available, otherwise use FRONTEND_URL
-    const frontendUrl = req.headers.origin || process.env.FRONTEND_URL || 'https://to-do-frontend-ljd2.vercel.app';
+    const frontendUrl = req.headers.origin || process.env.FRONTEND_URL || 'https://todo-frontend-beta-lemon.vercel.app';
     console.log('Using frontend URL:', frontendUrl);
     
     // Pass just the path to the email service

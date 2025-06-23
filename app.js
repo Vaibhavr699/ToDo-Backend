@@ -16,7 +16,7 @@ const app = express();
 // CORS configuration
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://to-do-frontend-ljd2.vercel.app',
+  'https://todo-frontend-beta-lemon.vercel.app',
   'https://todo-frontend-beta-lemon.vercel.app'
 ];
 

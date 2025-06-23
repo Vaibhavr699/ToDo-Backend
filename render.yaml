@@ -28,4 +28,4 @@ services:
       - key: FROM_NAME
         sync: false
       - key: FRONTEND_URL
-        value: https://to-do-frontend-ljd2.vercel.app 
+        value: https://todo-frontend-beta-lemon.vercel.app 
